@@ -14,7 +14,13 @@ const Map = () => {
     const intensity = mapPoint.intensity;
     return [longitude, latitude, intensity];
   });
-  useMap(mapContainer, MAPYCZ_API_KEY, heatData, isLoading);
+  const highlightData = data?.results.map((mapPoint) => {
+    const longitude = mapPoint.longitude;
+    const latitude = mapPoint.latitude;
+    return [longitude, latitude];
+  });
+  useMap(mapContainer, MAPYCZ_API_KEY, heatData, highlightData, isLoading);
+  console.log(highlightData)
 
   return (
     <>
