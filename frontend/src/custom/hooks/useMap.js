@@ -2,16 +2,19 @@ import { useEffect } from "react";
 import L from "leaflet";
 import "leaflet.heat";
 import "leaflet/dist/leaflet.css";
+import addPolyline from "./addPolyline";
 
 const useMap = (
   mapContainer,
   MAPYCZ_API_KEY,
   heatData,
-  highlightData,
-  isLoading
+  isLoading,
+  streetData,
+  streetDataAreLoading
 ) => {
+  let map;
   useEffect(() => {
-    const map = L.map(mapContainer.current).setView(
+    map = L.map(mapContainer.current).setView(
       [50.772245567257514, 15.0744030469653],
       16
     );
@@ -87,36 +90,25 @@ const useMap = (
     // finally we add our LogoControl to the map
     new LogoControl().addTo(map);
 
-    const streetCoordinates = [
-      [50.77104406473406, 15.047249248014701],
-      [50.77038527066764, 15.047225162590252],
-      [50.77006539043373, 15.047170970385233],
-      [50.76986356011302, 15.047146884960783],
-      [50.76952082738492, 15.0470926927557683],
-      [50.769162859410216, 15.047104735467991],
-      [50.76914381848378, 15.047086671399654],
-      [50.769033380957545, 15.0470926927557682],
-      [50.76874395723812, 15.046978286989626],
-      [50.76867921747688, 15.046731411389],
-      [50.76870968325804, 15.046189489338849],
-      [50.768945792389296, 15.04550305474199],
-      [50.769242831216644, 15.044810598789018],
-      [50.76930757019792, 15.044515552339494],
-    ];
-
-    L.polyline(streetCoordinates, { color: 'red', opacity: 0.65, weight: 5 }).addTo(map);
-
     if (!isLoading) {
-      // L.polyline(highlightData, { color: "red" }).addTo(map);
-
       L.heatLayer(heatData, {
         radius: 10, // Radius of each data point
         maxZoom: 19, // Maximum zoom level to display the heatmap
         gradient: { 0.4: "blue", 0.65: "lime", 1: "red" }, // Customize the gradient colors
       }).addTo(map);
     }
+
+    if (!streetDataAreLoading) {
+      streetData.forEach((element) => {
+        const { coordinates } = element.geojson;
+        const formattedCoordinates = coordinates.map((element) => {
+          return [element[1], element[0]];
+        });
+        addPolyline(map, formattedCoordinates);
+      });
+    }
     return () => map.remove();
-  }, [isLoading]);
+  }, [isLoading, streetDataAreLoading]);
 };
 
 export default useMap;
